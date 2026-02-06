@@ -14,6 +14,14 @@ let gameOver = false;
 let mode = "daily"; // "daily" | "challenge"
 let challengeCode = null;
 
+/* ---------------- KEYBOARD STATE ---------------- */
+const keyStates = {}; // letter -> absent | present | correct
+const STATE_PRIORITY = {
+  absent: 1,
+  present: 2,
+  correct: 3
+};
+
 /* ---------------- CONSTANTS ---------------- */
 const ROWS = 6;
 const COLS = 5;
@@ -50,7 +58,6 @@ async function loadWords() {
   SOLUTIONS = await loadWordFile("solutions.txt");
   VALID_GUESSES = await loadWordFile("guesses.txt");
 
-  // Ensure all solutions are valid guesses
   SOLUTIONS.forEach(w => {
     if (!VALID_GUESSES.includes(w)) VALID_GUESSES.push(w);
   });
@@ -106,6 +113,11 @@ function makeKey(label) {
   const key = document.createElement("div");
   key.className = "key";
   key.textContent = label;
+
+  if (label.length === 1) {
+    key.dataset.key = label.toLowerCase();
+  }
+
   key.onclick = () => handleKey(label);
   return key;
 }
@@ -140,6 +152,13 @@ function startGame(word) {
   currentGuess = "";
   gameOver = false;
   modal.classList.add("hidden");
+
+  // reset keyboard state
+  for (const k in keyStates) delete keyStates[k];
+  document.querySelectorAll(".key").forEach(k =>
+    k.classList.remove("absent", "present", "correct")
+  );
+
   initBoard();
 }
 
@@ -189,6 +208,8 @@ function submitGuess() {
 
   result.forEach((res, i) => row.children[i].classList.add(res));
 
+  updateKeyboard(currentGuess, result);
+
   if (currentGuess === solution) {
     endGame(true);
   } else if (++currentRow === ROWS) {
@@ -222,6 +243,30 @@ function scoreGuess(guess, sol) {
   }
 
   return res;
+}
+
+/* =========================================================
+   KEYBOARD COLOR TRACKING (NYT-ACCURATE)
+   ========================================================= */
+function updateKeyboard(guess, result) {
+  for (let i = 0; i < COLS; i++) {
+    const letter = guess[i];
+    const newState = result[i];
+    const oldState = keyStates[letter];
+
+    if (!oldState || STATE_PRIORITY[newState] > STATE_PRIORITY[oldState]) {
+      keyStates[letter] = newState;
+
+      const keyEl = document.querySelector(
+        `.key[data-key="${letter}"]`
+      );
+
+      if (keyEl) {
+        keyEl.classList.remove("absent", "present", "correct");
+        keyEl.classList.add(newState);
+      }
+    }
+  }
 }
 
 /* =========================================================
