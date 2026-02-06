@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wordle Challenge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <h1>Wordle</h1>
+  <div class="modes">
+    <button id="dailyBtn">Daily</button>
+    <button id="challengeBtn">Challenge</button>
+  </div>
+</header>
+
+<div id="challengePanel" class="hidden">
+  <input id="challengeInput" maxlength="10" placeholder="Enter challenge code" />
+  <button id="loadChallenge">Load</button>
+  <button id="createChallenge">Create</button>
+</div>
+
+<div id="board"></div>
+
+<div id="keyboard"></div>
+
+<div id="modal" class="hidden">
+  <div class="modal-content">
+    <h2 id="resultTitle"></h2>
+    <pre id="resultGrid"></pre>
+    <button id="copyResult">Copy</button>
+    <button onclick="location.reload()">Close</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
