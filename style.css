@@ -1,64 +1,240 @@
-body {
-  font-family: system-ui, sans-serif;
-  background: #121213;
-  color: white;
-  text-align: center;
+/* =========================================================
+   NYT-WORDLE STYLE BASE
+   ========================================================= */
+
+:root {
+  --bg: #ffffff;
+  --text: #1a1a1b;
+  --border: #d3d6da;
+
+  --correct: #6aaa64;
+  --present: #c9b458;
+  --absent: #787c7e;
+
+  --key-bg: #d3d6da;
+  --key-text: #1a1a1b;
 }
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* =========================================================
+   HEADER / MODE BUTTONS
+   ========================================================= */
 
 header {
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
-  padding: 10px 20px;
-}
-
-#board {
-  display: grid;
-  grid-template-rows: repeat(6, 1fr);
-  gap: 5px;
-  max-width: 300px;
-  margin: 20px auto;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 5px;
-}
-
-.tile {
-  width: 55px;
-  height: 55px;
-  border: 2px solid #3a3a3c;
-  font-size: 2rem;
-  font-weight: bold;
-  display: flex;
   align-items: center;
-  justify-content: center;
-  text-transform: uppercase;
 }
 
-.correct { background: #538d4e; border: none; }
-.present { background: #b59f3b; border: none; }
-.absent { background: #3a3a3c; border: none; }
-
-#keyboard {
-  max-width: 500px;
-  margin: auto;
+header h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
-.key {
-  margin: 3px;
-  padding: 10px;
-  background: #818384;
-  border-radius: 4px;
-  display: inline-block;
+.mode-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.mode-buttons button {
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
   cursor: pointer;
 }
 
-.hidden { display: none; }
+.mode-buttons button:hover {
+  background: #f3f3f3;
+}
+
+/* =========================================================
+   BOARD
+   ========================================================= */
+
+#board {
+  margin-top: 24px;
+}
+
+.row {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.tile {
+  width: 62px;
+  height: 62px;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Tile states */
+.tile.correct {
+  background: var(--correct);
+  border-color: var(--correct);
+  color: white;
+}
+
+.tile.present {
+  background: var(--present);
+  border-color: var(--present);
+  color: white;
+}
+
+.tile.absent {
+  background: var(--absent);
+  border-color: var(--absent);
+  color: white;
+}
+
+/* =========================================================
+   KEYBOARD
+   ========================================================= */
+
+#keyboard {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#keyboard > div {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.key {
+  min-width: 40px;
+  height: 58px;
+  padding: 0 10px;
+  background: var(--key-bg);
+  color: var(--key-text);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.key:hover {
+  filter: brightness(0.95);
+}
+
+.key.correct {
+  background: var(--correct);
+  color: white;
+}
+
+.key.present {
+  background: var(--present);
+  color: white;
+}
+
+.key.absent {
+  background: var(--absent);
+  color: white;
+}
+
+/* =========================================================
+   CHALLENGE PANEL
+   ========================================================= */
+
+#challengePanel {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+#challengePanel input {
+  width: 160px;
+  padding: 8px;
+  font-size: 14px;
+}
+
+#challengePanel button {
+  padding: 8px 12px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   MODAL / RESULTS
+   ========================================================= */
+
+#modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#modal.hidden {
+  display: none;
+}
 
 .modal-content {
-  background: #1a1a1b;
-  padding: 20px;
+  background: white;
+  padding: 24px;
   border-radius: 8px;
+  width: 280px;
+  text-align: center;
+}
+
+#resultTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+#resultGrid {
+  font-family: monospace;
+  white-space: pre;
+  margin-bottom: 12px;
+}
+
+#copyResult {
+  padding: 10px;
+  width: 100%;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* =========================================================
+   UTIL
+   ========================================================= */
+
+.hidden {
+  display: none;
 }
