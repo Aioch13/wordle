@@ -443,17 +443,36 @@ function pasteChallenge() {
   });
 }
 
-function loadChallenge(code) {
+/* =========================================================
+   CHALLENGE MODE - SMART LOADING
+   ========================================================= */
+function loadChallenge(input) {
+  if (!input) {
+    showStatus("Please enter or paste a challenge code");
+    return;
+  }
+  
+  // Use the smart extractor to find the challenge code
+  const code = extractChallengeCode(input);
+  
+  if (!code) {
+    showStatus("Could not find a valid challenge code in the input");
+    return;
+  }
+  
   const word = decodeWord(code);
   if (!word || !VALID_GUESSES.includes(word)) {
-    showStatus("Invalid challenge code");
+    showStatus("Invalid challenge code - word not found");
     return;
   }
 
   mode = "challenge";
   challengeCode = code;
   startGame(word);
-  showStatus("Challenge started");
+  showStatus("Challenge started!");
+  
+  // Update the input field with just the extracted code for clarity
+  challengeInput.value = code;
 }
 
 function encodeWord(word) {
