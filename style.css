@@ -1,8 +1,9 @@
 /* =========================================================
-   NYT-WORDLE STYLE BASE
+   NYT WORDLE – REFINED BASE
    ========================================================= */
 
 :root {
+  /* Colors */
   --bg: #ffffff;
   --text: #1a1a1b;
   --border: #d3d6da;
@@ -13,9 +14,22 @@
 
   --key-bg: #d3d6da;
   --key-text: #1a1a1b;
+
+  /* Sizing */
+  --tile-size: 62px;
+  --tile-font: 32px;
+
+  --key-height: 58px;
+  --key-min: 40px;
+  --key-font: 14px;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -29,11 +43,13 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100svh; /* mobile-safe viewport */
-  overflow: hidden; /* no scrolling */
+
+  min-height: 100svh;
+  overflow: hidden;
 }
 
 /* =========================================================
@@ -44,10 +60,13 @@ header {
   width: 100%;
   max-width: 500px;
   padding: 12px 16px;
+
   border-bottom: 1px solid var(--border);
+
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+
   flex-shrink: 0;
 }
 
@@ -55,7 +74,7 @@ header h1 {
   margin: 0;
   font-size: 32px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .mode-buttons {
@@ -67,9 +86,11 @@ header h1 {
   padding: 10px 16px;
   font-size: 15px;
   font-weight: 700;
+
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--bg);
+
   cursor: pointer;
 }
 
@@ -84,12 +105,15 @@ header h1 {
 .status {
   margin-top: 8px;
   padding: 8px 12px;
+
+  max-width: 500px;
+
   background: #f3f3f3;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
+
   font-size: 14px;
   font-weight: 600;
   color: #333;
-  max-width: 500px;
 }
 
 .status.hidden {
@@ -112,34 +136,40 @@ header h1 {
 }
 
 .tile {
-  width: 62px;
-  height: 62px;
+  width: var(--tile-size);
+  height: var(--tile-size);
+
   border: 2px solid var(--border);
+
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+
+  font-size: var(--tile-font);
   font-weight: 700;
   text-transform: uppercase;
 }
 
 /* Tile states */
+.tile.correct,
+.tile.present,
+.tile.absent {
+  color: #fff;
+}
+
 .tile.correct {
   background: var(--correct);
   border-color: var(--correct);
-  color: white;
 }
 
 .tile.present {
   background: var(--present);
   border-color: var(--present);
-  color: white;
 }
 
 .tile.absent {
   background: var(--absent);
   border-color: var(--absent);
-  color: white;
 }
 
 /* =========================================================
@@ -148,6 +178,7 @@ header h1 {
 
 #keyboard {
   margin-top: 24px;
+
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -160,41 +191,53 @@ header h1 {
 }
 
 .key {
-  height: 58px;
-  min-width: 40px;
+  height: var(--key-height);
+  min-width: var(--key-min);
   padding: 0 10px;
+
   background: var(--key-bg);
   color: var(--key-text);
-  font-size: 14px;
+
+  font-size: var(--key-font);
   font-weight: 700;
-  border-radius: 4px;
+
+  border-radius: var(--radius-sm);
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   cursor: pointer;
   user-select: none;
 }
 
+.key:active {
+  transform: scale(0.97);
+}
+
 .key.wide {
-  min-width: 80px; /* 2x normal key */
+  min-width: calc(var(--key-min) * 2);
   padding: 0 14px;
   font-size: 13px;
 }
 
 /* Keyboard states */
+.key.correct,
+.key.present,
+.key.absent {
+  color: #fff;
+}
+
 .key.correct {
   background: var(--correct);
-  color: white;
 }
 
 .key.present {
   background: var(--present);
-  color: white;
 }
 
 .key.absent {
   background: var(--absent);
-  color: white;
 }
 
 /* =========================================================
@@ -203,20 +246,24 @@ header h1 {
 
 #challengePanel {
   margin-top: 10px;
+
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 #challengePanel input {
   width: 150px;
   padding: 8px;
+
   font-size: 14px;
 }
 
 #challengePanel button {
   padding: 8px 12px;
   font-weight: 700;
+  cursor: pointer;
 }
 
 /* =========================================================
@@ -226,7 +273,9 @@ header h1 {
 #modal {
   position: fixed;
   inset: 0;
+
   background: rgba(0, 0, 0, 0.4);
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -237,28 +286,31 @@ header h1 {
 }
 
 .modal-content {
-  background: white;
+  background: #fff;
   padding: 24px;
-  border-radius: 8px;
+
   width: 280px;
+  border-radius: 8px;
+
   text-align: center;
 }
 
 #resultTitle {
+  margin-bottom: 12px;
   font-size: 18px;
   font-weight: 700;
-  margin-bottom: 12px;
 }
 
 #resultGrid {
+  margin-bottom: 12px;
   font-family: monospace;
   white-space: pre;
-  margin-bottom: 12px;
 }
 
 #copyResult {
-  padding: 10px;
   width: 100%;
+  padding: 10px;
+
   font-weight: 700;
   cursor: pointer;
 }
@@ -272,24 +324,21 @@ header h1 {
 }
 
 /* =========================================================
-   MOBILE RESPONSIVENESS (NO SCROLL)
+   MOBILE SCALING (NO SCROLL, SMOOTH)
    ========================================================= */
 
 @media (max-height: 700px) {
+  :root {
+    --tile-size: 54px;
+    --tile-font: 26px;
+
+    --key-height: 50px;
+    --key-min: 34px;
+    --key-font: 13px;
+  }
+
   header h1 {
     font-size: 26px;
-  }
-
-  .tile {
-    width: 52px;
-    height: 52px;
-    font-size: 26px;
-  }
-
-  .key {
-    height: 48px;
-    min-width: 34px;
-    font-size: 13px;
   }
 
   #keyboard {
@@ -298,15 +347,12 @@ header h1 {
 }
 
 @media (max-height: 600px) {
-  .tile {
-    width: 48px;
-    height: 48px;
-    font-size: 24px;
-  }
+  :root {
+    --tile-size: 48px;
+    --tile-font: 24px;
 
-  .key {
-    height: 44px;
-    min-width: 32px;
-    font-size: 12px;
+    --key-height: 44px;
+    --key-min: 32px;
+    --key-font: 12px;
   }
 }
