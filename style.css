@@ -18,20 +18,25 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow: hidden;
+  justify-content: center;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
-/* HEADER */
+/* =========================================================
+   HEADER
+   ========================================================= */
 header {
   width: 100%;
   max-width: 500px;
@@ -40,6 +45,7 @@ header {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .header-left {
@@ -51,14 +57,81 @@ header {
 .header-logo {
   height: 40px;
   width: auto;
+  max-height: 40px;
+  display: block;
 }
 
 h1 {
   font-size: 20px;
   font-weight: 800;
+  color: #6aaa64;
 }
 
-/* BOARD - Fixed the white-out issue */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#timerDisplay {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6aaa64;
+  background: rgba(106, 170, 100, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 60px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-buttons button {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-buttons button:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* =========================================================
+   STATUS BAR
+   ========================================================= */
+#status {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(26, 26, 27, 0.95);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  z-index: 1000;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+#status.hidden {
+  display: none;
+}
+
+/* =========================================================
+   BOARD
+   ========================================================= */
 #board {
   flex-grow: 1;
   display: flex;
@@ -66,10 +139,13 @@ h1 {
   justify-content: center;
   gap: 5px;
   padding: 15px;
+  min-height: 400px;
+  width: 100%;
+  max-width: 500px;
 }
 
 .row {
-  display: flex; /* THIS keeps tiles in a line */
+  display: flex;
   gap: 5px;
   justify-content: center;
 }
@@ -84,85 +160,243 @@ h1 {
   font-size: 2rem;
   font-weight: 700;
   text-transform: uppercase;
+  color: var(--text);
+  transition: border-color 0.2s ease, background-color 0.3s ease;
 }
 
-/* KEYBOARD - Fixed the vertical list issue */
+/* Tile colors */
+.tile.correct { 
+  background: var(--correct); 
+  border-color: var(--correct); 
+  color: white;
+}
+
+.tile.present { 
+  background: var(--present); 
+  border-color: var(--present); 
+  color: white;
+}
+
+.tile.absent { 
+  background: var(--absent);  
+  border-color: var(--absent); 
+  color: white;
+}
+
+/* =========================================================
+   KEYBOARD - FIXED FOR DESKTOP
+   ========================================================= */
 #keyboard {
   width: 100%;
   max-width: 500px;
-  padding: 10px 5px 30px;
+  padding: 10px 8px 20px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex-shrink: 0;
 }
 
-#keyboard div {
-  display: flex; /* THIS keeps keys in a row */
+.keyboard-row {
+  display: flex;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   width: 100%;
 }
 
 .key {
   height: 58px;
+  min-width: 40px;
   background: var(--key-bg);
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 1;
   font-weight: 700;
+  font-size: 14px;
   cursor: pointer;
   user-select: none;
+  border: none;
+  flex: 1;
+  transition: all 0.2s ease;
+}
+
+.key:hover {
+  opacity: 0.9;
+}
+
+.key:active {
+  transform: scale(0.95);
 }
 
 .key.wide {
   flex: 1.5;
   font-size: 12px;
+  min-width: 60px;
 }
 
-/* COLORS */
-.tile.correct, .key.correct { background: var(--correct); color: white; border: none; }
-.tile.present, .key.present { background: var(--present); color: white; border: none; }
-.tile.absent, .key.absent { background: var(--absent); color: white; border: none; }
+/* Keyboard colors */
+.key.correct { 
+  background: var(--correct); 
+  color: white; 
+}
 
-/* MODAL & STATUS */
-#status {
-  position: fixed;
-  top: 10%;
-  background: #1a1a1b;
-  color: white;
-  padding: 10px 20px;
+.key.present { 
+  background: var(--present); 
+  color: white; 
+}
+
+.key.absent { 
+  background: var(--absent); 
+  color: white; 
+}
+
+/* =========================================================
+   CHALLENGE PANEL
+   ========================================================= */
+#challengePanel {
+  width: 100%;
+  max-width: 500px;
+  background: var(--panel-bg);
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+#challengeInput {
+  flex: 1;
+  min-width: 150px;
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
   border-radius: 4px;
-  z-index: 1000;
+  font-size: 14px;
+  transition: all 0.3s ease;
 }
 
-.hidden { display: none !important; }
+#challengeInput:focus {
+  outline: 2px solid var(--correct);
+  outline-offset: -2px;
+}
 
+#challengeInput.valid {
+  border-color: var(--correct);
+  background: rgba(106, 170, 100, 0.1);
+}
+
+#challengeInput.invalid {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+#challengePanel button {
+  background: #787c7e;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#challengePanel button:hover {
+  opacity: 0.9;
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
 #modal {
   position: fixed;
   inset: 0;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.95);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+#modal.hidden { 
+  display: none !important; 
 }
 
 .modal-content {
   background: white;
+  width: 90%;
+  max-width: 320px;
   padding: 30px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
+
+#resultTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+
+#resultGrid {
+  background: rgba(0, 0, 0, 0.03);
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: monospace;
+}
+
+.modal-content button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-content button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-content button:active {
+  transform: translateY(0);
+}
+
+#copyResult { 
+  background: var(--correct); 
+  color: white; 
+}
+
+#playAgain { 
+  background: transparent; 
+  border: 1px solid var(--border); 
+  color: var(--text); 
+  margin-top: 15px; 
+}
+
 /* =========================================================
    LOADING SPINNER STYLES
    ========================================================= */
 #loadingOverlay {
   position: fixed;
   inset: 0;
-  background: white; /* Matches Light Theme */
+  background: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -174,8 +408,8 @@ h1 {
 .spinner {
   width: 50px;
   height: 50px;
-  border: 5px solid #d3d6da;
-  border-top: 5px solid #6aaa64; /* Lumiere Green */
+  border: 5px solid var(--border);
+  border-top: 5px solid var(--correct);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 15px;
@@ -189,4 +423,125 @@ h1 {
 #loadingOverlay.fade-out {
   opacity: 0;
   pointer-events: none;
+}
+
+/* =========================================================
+   UTILITY CLASSES
+   ========================================================= */
+.hidden { 
+  display: none !important; 
+}
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+@keyframes flip {
+  0% {
+    transform: rotateX(0);
+  }
+  50% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0);
+  }
+}
+
+.tile.flip {
+  animation: flip 0.6s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.shake {
+  animation: shake 0.5s ease;
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+@media (max-width: 500px) {
+  :root {
+    --tile-size: 52px;
+  }
+  
+  .tile {
+    font-size: 1.8rem;
+  }
+  
+  .key {
+    height: 52px;
+    font-size: 13px;
+    min-width: 30px;
+  }
+  
+  .key.wide {
+    min-width: 50px;
+  }
+  
+  header {
+    padding: 10px 12px;
+  }
+  
+  .header-logo {
+    height: 34px;
+  }
+  
+  h1 {
+    font-size: 18px;
+  }
+  
+  #timerDisplay {
+    font-size: 13px;
+    min-width: 55px;
+  }
+  
+  .mode-buttons button {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --tile-size: 62px;
+  }
+  
+  .key {
+    height: 62px;
+    font-size: 15px;
+    min-width: 45px;
+  }
+  
+  .key.wide {
+    min-width: 70px;
+    font-size: 13px;
+  }
+  
+  body {
+    padding: 20px 0;
+  }
+  
+  #keyboard {
+    padding: 15px 8px 30px;
+    gap: 10px;
+  }
+  
+  .keyboard-row {
+    gap: 8px;
+  }
+}
+
+/* For very large screens */
+@media (min-width: 1200px) {
+  body {
+    max-width: 500px;
+    margin: 0 auto;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
 }
