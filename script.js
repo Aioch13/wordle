@@ -227,25 +227,60 @@ function renderRow() {
 /* =========================================================
    GUESS SUBMISSION
    ========================================================= */
+/* =========================================================
+   ENHANCED GUESS SUBMISSION (WITH ANIMATIONS)
+   ========================================================= */
 function submitGuess() {
+  const row = board.children[currentRow];
+
+  // 1. Check length
   if (currentGuess.length !== COLS) return;
+
+  // 2. Check validity + Shake Animation
   if (!VALID_GUESSES.includes(currentGuess)) {
     showStatus("Not in word list");
+    row.classList.add("shake");
+    setTimeout(() => row.classList.remove("shake"), 500); // Match CSS duration
     return;
   }
 
   const result = scoreGuess(currentGuess, solution);
-  const row = board.children[currentRow];
+  const guessToProcess = currentGuess; // Store current guess before clearing
+  gameOver = true; // Temporarily lock input during animation
 
-  result.forEach((res, i) => row.children[i].classList.add(res));
-  updateKeyboard(currentGuess, result);
+  // 3. Staggered Flip Reveal
+  result.forEach((res, i) => {
+    const tile = row.children[i];
+    
+    setTimeout(() => {
+      tile.classList.add("flip");
 
-  if (currentGuess === solution) endGame(true);
-  else if (++currentRow === ROWS) endGame(false);
+      // Change color exactly halfway through the flip (at 90 degrees)
+      setTimeout(() => {
+        tile.classList.add(res);
+        if (i === COLS - 1) {
+          // 4. Update Keyboard and check Game State AFTER last tile flips
+          updateKeyboard(guessToProcess, result);
+          checkGameState(guessToProcess);
+        }
+      }, 250); // Half of --flip-speed (0.6s)
+
+    }, i * 150); // Stagger each tile by 150ms
+  });
 
   currentGuess = "";
 }
 
+/* Helper to handle game state after animations finish */
+function checkGameState(guess) {
+  if (guess === solution) {
+    setTimeout(() => endGame(true), 500);
+  } else if (++currentRow === ROWS) {
+    setTimeout(() => endGame(false), 500);
+  } else {
+    gameOver = false; // Re-enable input for next row
+  }
+}
 /* =========================================================
    SCORING
    ========================================================= */
