@@ -150,6 +150,13 @@ function bindUI() {
     else if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key.toUpperCase());
   });
 
+  // Modal "Click Outside to Close" Logic
+  modal.onclick = e => {
+    if (e.target === modal) {
+      modal.classList.add("hidden");
+    }
+  };
+
   dailyBtn.onclick = startDaily;
   challengeBtn.onclick = () => challengePanel.classList.toggle("hidden");
   loadChallengeBtn.onclick = () => loadChallenge(challengeInput.value.trim());
@@ -157,7 +164,6 @@ function bindUI() {
   pasteChallengeBtn.onclick = pasteChallenge;
   copyResultBtn.onclick = copyResults;
 }
-
 /* =========================================================
    GAME START
    ========================================================= */
