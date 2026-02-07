@@ -174,20 +174,24 @@ function startDaily() {
 }
 
 function startGame(word) {
-  modal.classList.add("hidden"); // ← ADD THIS
+  // 1. Force the modal to hide
+  modal.classList.add("hidden"); 
 
+  // 2. Reset logic
   solution = word;
   currentRow = 0;
   currentGuess = "";
   gameOver = false;
 
-
+  // 3. Reset Keyboard Visuals
   for (const k in keyStates) delete keyStates[k];
-  document.querySelectorAll(".key").forEach(k =>
-    k.classList.remove("absent", "present", "correct")
-  );
+  document.querySelectorAll(".key").forEach(k => {
+    k.classList.remove("absent", "present", "correct");
+  });
 
-  initBoard();
+  // 4. Refresh UI
+  initBoard();    // Re-draws the empty squares
+  // initKeyboard(); // Optional: only if you change layouts
 }
 
 /* =========================================================
