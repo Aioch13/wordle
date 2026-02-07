@@ -174,11 +174,13 @@ function startDaily() {
 }
 
 function startGame(word) {
+  modal.classList.add("hidden"); // ← ADD THIS
+
   solution = word;
   currentRow = 0;
   currentGuess = "";
   gameOver = false;
-  modal.classList.add("hidden");
+
 
   for (const k in keyStates) delete keyStates[k];
   document.querySelectorAll(".key").forEach(k =>
