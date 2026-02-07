@@ -68,31 +68,20 @@ function showStatus(msg, timeout = 2000) {
    ========================================================= */
 async function loadWordFile(path) {
   try {
-    console.log(`Loading word file: ${path}`);
     const res = await fetch(path + "?v=" + Date.now());
-    
-    if (!res.ok) {
-      throw new Error(`Failed to load ${path}: ${res.status} ${res.statusText}`);
-    }
+    if (!res.ok) throw new Error(`Failed to load ${path}`);
     
     const text = await res.text();
-    console.log(`Raw text from ${path} (first 100 chars):`, text.substring(0, 100));
     
-    // Handle different line endings and clean the data
     const words = text
-      .replace(/\r\n/g, '\n')  // Windows line endings
-      .replace(/\r/g, '\n')    // Old Mac line endings
-      .split('\n')
-      .map(w => w.trim().toLowerCase())
-      .filter(w => w.length === 5 && /^[a-z]+$/.test(w));
+      .split('\n') // Split by newline
+      .map(w => {
+        // This regex removes EVERYTHING that isn't a letter a-z
+        return w.toLowerCase().replace(/[^a-z]/g, '').trim();
+      })
+      .filter(w => w.length === 5); // Only keep 5-letter words
     
     console.log(`Loaded ${words.length} words from ${path}`);
-    
-    // Debug: Check for "squid"
-    if (words.includes('squid')) {
-      console.log(`✓ "squid" found in ${path}`);
-    }
-    
     return words;
   } catch (error) {
     console.error(`Error loading ${path}:`, error);
