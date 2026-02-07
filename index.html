@@ -2,39 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Lumiere Wordle Challenge</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Wordle Challenge</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<header>
-  <h1>Lumiere WORDLE</h1>
-  <div class="mode-buttons">
-    <button id="dailyBtn">Daily</button>
-    <button id="challengeBtn">Challenge</button>
+  <!-- =========================================================
+       HEADER
+       ========================================================= -->
+  <header>
+    <h1>WORDLE</h1>
+    <div class="mode-buttons">
+      <button id="dailyBtn">Daily</button>
+      <button id="challengeBtn">Challenge</button>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       STATUS BAR (NON-MODAL FEEDBACK)
+       ========================================================= -->
+  <div id="status" class="status hidden"></div>
+
+  <!-- =========================================================
+       GAME BOARD
+       ========================================================= -->
+  <div id="board"></div>
+
+  <!-- =========================================================
+       CHALLENGE PANEL
+       ========================================================= -->
+  <div id="challengePanel" class="hidden">
+    <input
+      id="challengeInput"
+      type="text"
+      placeholder="Paste challenge code"
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
+    />
+    <button id="loadChallenge">Start</button>
+    <button id="pasteChallenge">Paste</button>
+    <button id="createChallenge">Create</button>
   </div>
-</header>
 
-<div id="challengePanel" class="hidden">
-  <input id="challengeInput" maxlength="10" placeholder="Enter challenge code" />
-  <button id="loadChallenge">Load</button>
-  <button id="createChallenge">Create</button>
-</div>
+  <!-- =========================================================
+       KEYBOARD
+       ========================================================= -->
+  <div id="keyboard"></div>
 
-<div id="board"></div>
-
-<div id="keyboard"></div>
-
-<div id="modal" class="hidden">
-  <div class="modal-content">
-    <h2 id="resultTitle"></h2>
-    <pre id="resultGrid"></pre>
-    <button id="copyResult">Copy</button>
-    <button onclick="location.reload()">Close</button>
+  <!-- =========================================================
+       RESULT MODAL
+       ========================================================= -->
+  <div id="modal" class="hidden">
+    <div class="modal-content">
+      <div id="resultTitle"></div>
+      <pre id="resultGrid"></pre>
+      <button id="copyResult">Copy</button>
+    </div>
   </div>
-</div>
 
-<script src="script.js"></script>
+  <!-- =========================================================
+       SCRIPT
+       ========================================================= -->
+  <script src="script.js"></script>
+
 </body>
 </html>
