@@ -62,13 +62,48 @@ function showStatus(msg, timeout = 2000) {
 /* =========================================================
    LOAD WORD LISTS
    ========================================================= */
+/* =========================================================
+   LOAD WORD LISTS (WITH DEBUGGING)
+   ========================================================= */
 async function loadWordFile(path) {
+  try {
     const res = await fetch(path);
+    if (!res.ok) {
+      throw new Error(`Failed to load ${path}: ${res.status} ${res.statusText}`);
+    }
     const text = await res.text();
-    return text
-        .split(/\r?\n/)
-        .map(w => w.trim().toLowerCase())
-        .filter(w => /^[a-z]{5}$/.test(w));
+    const words = text
+      .split(/\r?\n/)
+      .map(w => w.trim().toLowerCase())
+      .filter(w => /^[a-z]{5}$/.test(w));
+    
+    console.log(`Loaded ${words.length} words from ${path}`);
+    return words;
+  } catch (error) {
+    console.error(`Error loading ${path}:`, error);
+    return [];
+  }
+}
+
+async function loadWords() {
+  SOLUTIONS = await loadWordFile("solutions.txt");
+  VALID_GUESSES = await loadWordFile("guesses.txt");
+  
+  console.log(`Solutions count: ${SOLUTIONS.length}`);
+  console.log(`Guesses count before merge: ${VALID_GUESSES.length}`);
+  
+  // Merge solutions into guesses if not already present
+  SOLUTIONS.forEach(w => {
+    if (!VALID_GUESSES.includes(w)) {
+      VALID_GUESSES.push(w);
+    }
+  });
+  
+  console.log(`Guesses count after merge: ${VALID_GUESSES.length}`);
+  
+  // Test if "squid" is in the lists
+  console.log(`Is "squid" in solutions? ${SOLUTIONS.includes('squid')}`);
+  console.log(`Is "squid" in valid guesses? ${VALID_GUESSES.includes('squid')}`);
 }
 
 async function loadWords() {
