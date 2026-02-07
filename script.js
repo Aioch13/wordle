@@ -478,7 +478,7 @@ function createChallenge() {
         return;
     }
     const code = encodeWord(word);
-    navigator.clipboard.writeText(`🧩 LUMIERE CHALLENGE\nCode: \`${code}\`\nhttps://aioch13.github.io/wordle/`);
+    navigator.clipboard.writeText(`🧩 LUMIERE WORDLE CHALLENGE\nCode: \`${code}\`\nhttps://aioch13.github.io/wordle/`);
     showStatus("Challenge copied to clipboard!");
 }
 
