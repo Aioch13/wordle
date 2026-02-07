@@ -575,7 +575,24 @@ function extractChallengeCode(text) {
   
   return null;
 }
-
+function validateChallengeInput() {
+  const input = challengeInput.value.trim();
+  
+  if (!input) {
+    challengeInput.classList.remove("valid", "invalid");
+    return;
+  }
+  
+  const code = extractChallengeCode(input);
+  
+  if (code && isValidChallengeCode(code)) {
+    challengeInput.classList.add("valid");
+    challengeInput.classList.remove("invalid");
+  } else {
+    challengeInput.classList.add("invalid");
+    challengeInput.classList.remove("valid");
+  }
+}
 function isValidChallengeCode(code) {
   // Challenge codes should be base64 (alphanumeric, +, /) and not too long
   if (!code || code.length < 4 || code.length > 30) return false;
