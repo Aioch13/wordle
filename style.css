@@ -156,3 +156,37 @@ h1 {
   text-align: center;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
+/* =========================================================
+   LOADING SPINNER STYLES
+   ========================================================= */
+#loadingOverlay {
+  position: fixed;
+  inset: 0;
+  background: white; /* Matches Light Theme */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #d3d6da;
+  border-top: 5px solid #6aaa64; /* Lumiere Green */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#loadingOverlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
