@@ -131,7 +131,12 @@ function makeKey(label) {
   const key = document.createElement("div");
   key.className = "key";
   key.textContent = label;
-  if (label.length === 1) key.dataset.key = label.toLowerCase();
+  
+  // Only add data-key for letter keys
+  if (label.length === 1 && label !== "⌫") {
+    key.dataset.key = label.toLowerCase();
+  }
+  
   key.onclick = () => handleKey(label);
   return key;
 }
