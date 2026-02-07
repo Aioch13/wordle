@@ -418,28 +418,53 @@ function createChallenge() {
   const code = encodeWord(word);
   const gameUrl = "https://aioch13.github.io/wordle/";
   
-  // Format the Discord Message
+  // Format the Discord Message with clear code formatting
   const discordMessage = 
-`🧩 **LUMIERE WORDLE: CHALLENGE INVITE** 🧩
+`🧩 LUMIERE WORDLE CHALLENGE 🧩
 
 Can you guess my secret word? 
-Play here: ${gameUrl}
 
-**Challenge Code:**
+**Play here:** ${gameUrl}
+
+**Challenge Code:** 
 \`${code}\`
 
-*(Copy the code above, open the link, click 'Challenge', and paste it in!)*`;
+*(Copy JUST the code above, open the link, click 'Challenge', and paste it!)*`;
 
   // Copy the full message to clipboard
   navigator.clipboard.writeText(discordMessage).then(() => {
-    showStatus("Invite message copied to clipboard!");
+    showStatus("Challenge invite copied to clipboard!");
+    
+    // Optional: Show the code in the challenge panel for easy copy
+    challengeInput.value = code;
+    challengePanel.classList.remove("hidden");
   });
 }
 
 function pasteChallenge() {
   navigator.clipboard.readText().then(text => {
-    challengeInput.value = text.trim();
-    showStatus("Challenge code pasted");
+    if (!text) {
+      showStatus("Clipboard is empty");
+      return;
+    }
+    
+    const code = extractChallengeCode(text);
+    
+    if (code) {
+      challengeInput.value = code;
+      showStatus("Challenge code extracted and pasted!");
+      
+      // Optionally auto-start the challenge
+      // Uncomment the next line if you want to auto-start when code is detected:
+      // setTimeout(() => loadChallenge(code), 500);
+    } else {
+      // If no code found, paste the raw text and let user edit
+      challengeInput.value = text;
+      showStatus("Pasted text - please edit to show just the challenge code");
+    }
+  }).catch(err => {
+    showStatus("Failed to read clipboard");
+    console.error("Clipboard error:", err);
   });
 }
 
