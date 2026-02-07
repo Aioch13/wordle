@@ -225,60 +225,90 @@ function renderRow() {
 }
 
 /* =========================================================
-   GUESS SUBMISSION
-   ========================================================= */
-/* =========================================================
-   ENHANCED GUESS SUBMISSION (WITH ANIMATIONS)
+   GUESS SUBMISSION (FIXED VERSION)
    ========================================================= */
 function submitGuess() {
   const row = board.children[currentRow];
 
   // 1. Check length
-  if (currentGuess.length !== COLS) return;
+  if (currentGuess.length !== COLS) {
+    showStatus("Not enough letters");
+    return;
+  }
 
   // 2. Check validity + Shake Animation
   if (!VALID_GUESSES.includes(currentGuess)) {
     showStatus("Not in word list");
     row.classList.add("shake");
-    setTimeout(() => row.classList.remove("shake"), 500); // Match CSS duration
+    setTimeout(() => row.classList.remove("shake"), 500);
     return;
   }
 
   const result = scoreGuess(currentGuess, solution);
-  const guessToProcess = currentGuess; // Store current guess before clearing
-  gameOver = true; // Temporarily lock input during animation
+  const guessToProcess = currentGuess;
+  
+  // Lock input during animation
+  gameOver = true;
 
-  // 3. Staggered Flip Reveal
+  // 3. Animate and reveal tiles
   result.forEach((res, i) => {
     const tile = row.children[i];
+    const letter = guessToProcess[i];
     
     setTimeout(() => {
+      // Start flip animation
       tile.classList.add("flip");
-
-      // Change color exactly halfway through the flip (at 90 degrees)
+      
+      // At the midpoint of flip (250ms), update color AND ensure letter stays
       setTimeout(() => {
+        // Update tile state
         tile.classList.add(res);
+        tile.textContent = letter; // Re-apply letter to ensure visibility
+        
+        // Update keyboard for this letter
+        updateKeyboardForLetter(letter, res);
+        
+        // On last tile, check game state
         if (i === COLS - 1) {
-          // 4. Update Keyboard and check Game State AFTER last tile flips
-          updateKeyboard(guessToProcess, result);
           checkGameState(guessToProcess);
         }
-      }, 250); // Half of --flip-speed (0.6s)
-
-    }, i * 150); // Stagger each tile by 150ms
+      }, 250);
+      
+    }, i * 300); // Stagger each tile
   });
 
   currentGuess = "";
 }
 
-/* Helper to handle game state after animations finish */
-function checkGameState(guess) {
-  if (guess === solution) {
-    setTimeout(() => endGame(true), 500);
-  } else if (++currentRow === ROWS) {
-    setTimeout(() => endGame(false), 500);
-  } else {
-    gameOver = false; // Re-enable input for next row
+/* =========================================================
+   UPDATE KEYBOARD FOR SINGLE LETTER
+   ========================================================= */
+function updateKeyboardForLetter(letter, state) {
+  const keyEl = document.querySelector(`.key[data-key="${letter}"]`);
+  if (!keyEl) return;
+  
+  const oldState = keyStates[letter];
+  
+  // Only update if new state has higher priority
+  if (!oldState || STATE_PRIORITY[state] > STATE_PRIORITY[oldState]) {
+    keyStates[letter] = state;
+    
+    // Remove all state classes
+    keyEl.classList.remove("absent", "present", "correct");
+    
+    // Add new state class
+    keyEl.classList.add(state);
+  }
+}
+
+/* =========================================================
+   UPDATE KEYBOARD (SIMPLIFIED VERSION)
+   ========================================================= */
+function updateKeyboard(guess, result) {
+  for (let i = 0; i < COLS; i++) {
+    const letter = guess[i];
+    const state = result[i];
+    updateKeyboardForLetter(letter, state);
   }
 }
 /* =========================================================
