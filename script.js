@@ -101,18 +101,31 @@ function initBoard() {
 }
 
 function initKeyboard() {
-  const layout = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+  const keyboardLayout = [
+    ["Q","W","E","R","T","Y","U","I","O","P"],
+    ["A","S","D","F","G","H","J","K","L"],
+    ["⌫","Z","X","C","V","B","N","M","ENTER"]
+  ];
+
   keyboard.innerHTML = "";
 
-  layout.forEach(row => {
+  keyboardLayout.forEach(row => {
     const rowDiv = document.createElement("div");
-    [...row].forEach(k => rowDiv.appendChild(makeKey(k)));
+
+    row.forEach(keyLabel => {
+      const key = makeKey(keyLabel);
+
+      if (keyLabel === "ENTER" || keyLabel === "⌫") {
+        key.classList.add("wide");
+      }
+
+      rowDiv.appendChild(key);
+    });
+
     keyboard.appendChild(rowDiv);
   });
-
-  keyboard.appendChild(makeKey("ENTER"));
-  keyboard.appendChild(makeKey("⌫"));
 }
+
 
 function makeKey(label) {
   const key = document.createElement("div");
