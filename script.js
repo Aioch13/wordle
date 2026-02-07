@@ -332,15 +332,32 @@ document.getElementById("playAgain").onclick = () => {
    CHALLENGE MODE
    ========================================================= */
 function createChallenge() {
-  const word = prompt("Enter a 5-letter word")?.toLowerCase();
+  const word = prompt("Enter a 5-letter word to challenge your friends:")?.toLowerCase();
+  
   if (!word || !VALID_GUESSES.includes(word)) {
-    showStatus("Invalid word");
+    showStatus("Invalid word - must be a 5-letter dictionary word");
     return;
   }
 
   const code = encodeWord(word);
-  navigator.clipboard.writeText(code);
-  showStatus("Challenge generated & copied");
+  const gameUrl = "https://aioch13.github.io/wordle/";
+  
+  // Format the Discord Message
+  const discordMessage = 
+`🧩 **LUMIERE WORDLE: CHALLENGE INVITE** 🧩
+
+Can you guess my secret word? 
+Play here: ${gameUrl}
+
+**Challenge Code:**
+\`${code}\`
+
+*(Copy the code above, open the link, click 'Challenge', and paste it in!)*`;
+
+  // Copy the full message to clipboard
+  navigator.clipboard.writeText(discordMessage).then(() => {
+    showStatus("Invite message copied to clipboard!");
+  });
 }
 
 function pasteChallenge() {
