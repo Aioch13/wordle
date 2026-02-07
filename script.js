@@ -168,6 +168,8 @@ function bindUI() {
   createChallengeBtn.onclick = createChallenge;
   pasteChallengeBtn.onclick = pasteChallenge;
   copyResultBtn.onclick = copyResults;
+  challengeInput.addEventListener('input', validateChallengeInput);
+}
 }
 /* =========================================================
    GAME START
