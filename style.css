@@ -223,3 +223,78 @@ header h1 {
 
 /* Hidden utility */
 .hidden { display: none; }
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+@keyframes flip {
+  0% {
+    transform: rotateX(0);
+  }
+  50% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0);
+  }
+}
+
+.tile.flip {
+  animation: flip 0.6s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.shake {
+  animation: shake 0.5s ease;
+}
+
+/* =========================================================
+   KEYBOARD STATES
+   ========================================================= */
+.key.correct {
+  background: var(--correct) !important;
+}
+
+.key.present {
+  background: var(--present) !important;
+}
+
+.key.absent {
+  background: var(--absent) !important;
+}
+
+/* =========================================================
+   TILE STATES (ENSURE TEXT IS VISIBLE)
+   ========================================================= */
+.tile.correct, 
+.tile.present, 
+.tile.absent {
+  color: white !important;
+  border: none;
+}
+
+/* Ensure text stays visible during flip */
+.tile {
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+/* =========================================================
+   STATUS BAR
+   ========================================================= */
+.status {
+  position: fixed;
+  top: 70px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  z-index: 100;
+  font-weight: 600;
+  text-align: center;
+}
