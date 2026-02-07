@@ -170,7 +170,7 @@ function bindUI() {
   copyResultBtn.onclick = copyResults;
   challengeInput.addEventListener('input', validateChallengeInput);
 }
-}
+
 /* =========================================================
    GAME START
    ========================================================= */
@@ -343,26 +343,6 @@ function scoreGuess(guess, sol) {
     }
   }
   return res;
-}
-
-/* =========================================================
-   KEYBOARD UPDATE
-   ========================================================= */
-function updateKeyboard(guess, result) {
-  for (let i = 0; i < COLS; i++) {
-    const letter = guess[i];
-    const newState = result[i];
-    const oldState = keyStates[letter];
-
-    if (!oldState || STATE_PRIORITY[newState] > STATE_PRIORITY[oldState]) {
-      keyStates[letter] = newState;
-      const keyEl = document.querySelector(`.key[data-key="${letter}"]`);
-      if (keyEl) {
-        keyEl.classList.remove("absent", "present", "correct");
-        keyEl.classList.add(newState);
-      }
-    }
-  }
 }
 
 /* =========================================================
@@ -607,5 +587,14 @@ function isValidChallengeCode(code) {
     return word && word.length === 5 && VALID_GUESSES.includes(word);
   } catch {
     return false;
+  }
+}
+function checkGameState(guess) {
+  if (guess === solution) {
+    setTimeout(() => endGame(true), 500);
+  } else if (++currentRow === ROWS) {
+    setTimeout(() => endGame(false), 500);
+  } else {
+    gameOver = false; // Re-enable input for the next row
   }
 }
