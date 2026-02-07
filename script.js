@@ -321,6 +321,11 @@ function copyResults() {
   navigator.clipboard.writeText(resultGrid.textContent);
 }
 
+document.getElementById("playAgain").onclick = () => {
+  modal.classList.add("hidden");
+  startDaily();
+};
+
 /* =========================================================
    CHALLENGE MODE
    ========================================================= */
