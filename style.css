@@ -287,14 +287,22 @@ header h1 {
 /* =========================================================
    STATUS BAR
    ========================================================= */
-.status {
+/* Add to your existing CSS */
+#status {
   position: fixed;
   top: 70px;
-  background: rgba(0, 0, 0, 0.8);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
   color: white;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: 8px;
-  z-index: 100;
+  z-index: 1000;
   font-weight: 600;
   text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+#status.hidden {
+  display: none;
 }
