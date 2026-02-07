@@ -1,5 +1,5 @@
 /* =========================================================
-   WORDLE CHALLENGE – CORE ENGINE
+   WORDLE CHALLENGE – CORE ENGINE (PATCHED)
    ========================================================= */
 
 /* ---------------- GLOBAL WORD LISTS ---------------- */
@@ -11,16 +11,12 @@ let solution = "";
 let currentRow = 0;
 let currentGuess = "";
 let gameOver = false;
-let mode = "daily"; // "daily" | "challenge"
+let mode = "daily";
 let challengeCode = null;
 
 /* ---------------- KEYBOARD STATE ---------------- */
-const keyStates = {}; // letter -> absent | present | correct
-const STATE_PRIORITY = {
-  absent: 1,
-  present: 2,
-  correct: 3
-};
+const keyStates = {};
+const STATE_PRIORITY = { absent: 1, present: 2, correct: 3 };
 
 /* ---------------- CONSTANTS ---------------- */
 const ROWS = 6;
@@ -36,35 +32,44 @@ const challengePanel = document.getElementById("challengePanel");
 const challengeInput = document.getElementById("challengeInput");
 const loadChallengeBtn = document.getElementById("loadChallenge");
 const createChallengeBtn = document.getElementById("createChallenge");
+const pasteChallengeBtn = document.getElementById("pasteChallenge");
 const modal = document.getElementById("modal");
 const resultTitle = document.getElementById("resultTitle");
 const resultGrid = document.getElementById("resultGrid");
 const copyResultBtn = document.getElementById("copyResult");
+const statusBar = document.getElementById("status");
 
 /* =========================================================
-   LOAD WORD LISTS (RAW TXT, FAIL-SAFE)
+   STATUS MESSAGE
+   ========================================================= */
+function showStatus(msg, timeout = 2000) {
+  statusBar.textContent = msg;
+  statusBar.classList.remove("hidden");
+
+  clearTimeout(showStatus._timer);
+  showStatus._timer = setTimeout(() => {
+    statusBar.classList.add("hidden");
+  }, timeout);
+}
+
+/* =========================================================
+   LOAD WORD LISTS
    ========================================================= */
 async function loadWordFile(path) {
   const res = await fetch(path);
   const text = await res.text();
-
   return text
     .split(/\r?\n/)
     .map(w => w.trim().toLowerCase())
-    .filter(w => w.length === 5 && /^[a-z]{5}$/.test(w));
+    .filter(w => /^[a-z]{5}$/.test(w));
 }
 
 async function loadWords() {
   SOLUTIONS = await loadWordFile("solutions.txt");
   VALID_GUESSES = await loadWordFile("guesses.txt");
-
   SOLUTIONS.forEach(w => {
     if (!VALID_GUESSES.includes(w)) VALID_GUESSES.push(w);
   });
-
-  console.log(
-    `Loaded ${SOLUTIONS.length} solutions, ${VALID_GUESSES.length} valid guesses`
-  );
 }
 
 /* =========================================================
@@ -113,11 +118,7 @@ function makeKey(label) {
   const key = document.createElement("div");
   key.className = "key";
   key.textContent = label;
-
-  if (label.length === 1) {
-    key.dataset.key = label.toLowerCase();
-  }
-
+  if (label.length === 1) key.dataset.key = label.toLowerCase();
   key.onclick = () => handleKey(label);
   return key;
 }
@@ -125,6 +126,12 @@ function makeKey(label) {
 function bindUI() {
   document.addEventListener("keydown", e => {
     if (gameOver) return;
+
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
+      e.preventDefault();
+      return;
+    }
+
     if (e.key === "Enter") handleKey("ENTER");
     else if (e.key === "Backspace") handleKey("⌫");
     else if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key.toUpperCase());
@@ -134,6 +141,7 @@ function bindUI() {
   challengeBtn.onclick = () => challengePanel.classList.toggle("hidden");
   loadChallengeBtn.onclick = () => loadChallenge(challengeInput.value.trim());
   createChallengeBtn.onclick = createChallenge;
+  pasteChallengeBtn.onclick = pasteChallenge;
   copyResultBtn.onclick = copyResults;
 }
 
@@ -153,7 +161,6 @@ function startGame(word) {
   gameOver = false;
   modal.classList.add("hidden");
 
-  // reset keyboard state
   for (const k in keyStates) delete keyStates[k];
   document.querySelectorAll(".key").forEach(k =>
     k.classList.remove("absent", "present", "correct")
@@ -197,9 +204,8 @@ function renderRow() {
    ========================================================= */
 function submitGuess() {
   if (currentGuess.length !== COLS) return;
-
   if (!VALID_GUESSES.includes(currentGuess)) {
-    alert("Not in word list");
+    showStatus("Not in word list");
     return;
   }
 
@@ -207,20 +213,16 @@ function submitGuess() {
   const row = board.children[currentRow];
 
   result.forEach((res, i) => row.children[i].classList.add(res));
-
   updateKeyboard(currentGuess, result);
 
-  if (currentGuess === solution) {
-    endGame(true);
-  } else if (++currentRow === ROWS) {
-    endGame(false);
-  }
+  if (currentGuess === solution) endGame(true);
+  else if (++currentRow === ROWS) endGame(false);
 
   currentGuess = "";
 }
 
 /* =========================================================
-   SCORING (NYT-ACCURATE)
+   SCORING
    ========================================================= */
 function scoreGuess(guess, sol) {
   const res = Array(COLS).fill("absent");
@@ -241,12 +243,11 @@ function scoreGuess(guess, sol) {
       solArr[idx] = null;
     }
   }
-
   return res;
 }
 
 /* =========================================================
-   KEYBOARD COLOR TRACKING (NYT-ACCURATE)
+   KEYBOARD UPDATE
    ========================================================= */
 function updateKeyboard(guess, result) {
   for (let i = 0; i < COLS; i++) {
@@ -256,11 +257,7 @@ function updateKeyboard(guess, result) {
 
     if (!oldState || STATE_PRIORITY[newState] > STATE_PRIORITY[oldState]) {
       keyStates[letter] = newState;
-
-      const keyEl = document.querySelector(
-        `.key[data-key="${letter}"]`
-      );
-
+      const keyEl = document.querySelector(`.key[data-key="${letter}"]`);
       if (keyEl) {
         keyEl.classList.remove("absent", "present", "correct");
         keyEl.classList.add(newState);
@@ -270,7 +267,7 @@ function updateKeyboard(guess, result) {
 }
 
 /* =========================================================
-   END GAME + RESULTS
+   END GAME
    ========================================================= */
 function endGame(win) {
   gameOver = true;
@@ -286,9 +283,11 @@ function showResults(win) {
   for (let r = 0; r <= currentRow; r++) {
     const row = board.children[r];
     [...row.children].forEach(tile => {
-      if (tile.classList.contains("correct")) grid += "🟩";
-      else if (tile.classList.contains("present")) grid += "🟨";
-      else grid += "⬜";
+      grid += tile.classList.contains("correct")
+        ? "🟩"
+        : tile.classList.contains("present")
+        ? "🟨"
+        : "⬜";
     });
     grid += "\n";
   }
@@ -304,32 +303,38 @@ function copyResults() {
 }
 
 /* =========================================================
-   CHALLENGE MODE – ENCODE / DECODE
+   CHALLENGE MODE
    ========================================================= */
 function createChallenge() {
   const word = prompt("Enter a 5-letter word")?.toLowerCase();
-
   if (!word || !VALID_GUESSES.includes(word)) {
-    alert("Invalid word");
+    showStatus("Invalid word");
     return;
   }
 
   const code = encodeWord(word);
   navigator.clipboard.writeText(code);
-  alert(`Challenge code copied:\n${code}`);
+  showStatus("Challenge generated & copied");
+}
+
+function pasteChallenge() {
+  navigator.clipboard.readText().then(text => {
+    challengeInput.value = text.trim();
+    showStatus("Challenge code pasted");
+  });
 }
 
 function loadChallenge(code) {
   const word = decodeWord(code);
-
   if (!word || !VALID_GUESSES.includes(word)) {
-    alert("Invalid challenge code");
+    showStatus("Invalid challenge code");
     return;
   }
 
   mode = "challenge";
   challengeCode = code;
   startGame(word);
+  showStatus("Challenge started");
 }
 
 function encodeWord(word) {
