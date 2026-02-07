@@ -477,3 +477,72 @@ function decodeWord(code) {
     return null;
   }
 }
+/* =========================================================
+   SMART CHALLENGE CODE EXTRACTOR
+   ========================================================= */
+function extractChallengeCode(text) {
+  if (!text) return null;
+  
+  // Trim the text
+  text = text.trim();
+  
+  // First, try to find the code in backticks (Discord code blocks)
+  const backtickMatch = text.match(/`([^`]+)`/);
+  if (backtickMatch) {
+    const codeInBackticks = backtickMatch[1].trim();
+    // If it's valid base64 (or looks like our challenge code), return it
+    if (isValidChallengeCode(codeInBackticks)) {
+      return codeInBackticks;
+    }
+  }
+  
+  // Try to find any standalone base64 string (no spaces, contains + or /, alphanumeric)
+  const base64Regex = /[A-Za-z0-9+/]{8,}/g;
+  const matches = text.match(base64Regex);
+  
+  if (matches) {
+    // Return the longest match (most likely to be the challenge code)
+    const longestMatch = matches.sort((a, b) => b.length - a.length)[0];
+    if (isValidChallengeCode(longestMatch)) {
+      return longestMatch;
+    }
+  }
+  
+  // Look for "Challenge Code:" or "Code:" pattern
+  const codePatterns = [
+    /challenge code:\s*([A-Za-z0-9+/]+)/i,
+    /code:\s*([A-Za-z0-9+/]+)/i,
+    /challenge:\s*([A-Za-z0-9+/]+)/i
+  ];
+  
+  for (const pattern of codePatterns) {
+    const match = text.match(pattern);
+    if (match && match[1] && isValidChallengeCode(match[1])) {
+      return match[1];
+    }
+  }
+  
+  // Last resort: try the entire text if it looks like a challenge code
+  if (isValidChallengeCode(text)) {
+    return text;
+  }
+  
+  return null;
+}
+
+function isValidChallengeCode(code) {
+  // Challenge codes should be base64 (alphanumeric, +, /) and not too long
+  if (!code || code.length < 4 || code.length > 30) return false;
+  
+  // Check if it's valid base64
+  const base64Regex = /^[A-Za-z0-9+/]+=*$/;
+  if (!base64Regex.test(code)) return false;
+  
+  // Try to decode it to see if it's a valid word
+  try {
+    const word = decodeWord(code);
+    return word && word.length === 5 && VALID_GUESSES.includes(word);
+  } catch {
+    return false;
+  }
+}
