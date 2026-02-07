@@ -306,3 +306,31 @@ header h1 {
 #status.hidden {
   display: none;
 }
+/* =========================================================
+   CHALLENGE INPUT STATES
+   ========================================================= */
+#challengeInput:focus {
+  outline: 2px solid #56a550;
+  outline-offset: -2px;
+}
+
+#challengeInput.valid {
+  border-color: var(--correct);
+  background: rgba(83, 141, 78, 0.1);
+}
+
+#challengeInput.invalid {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+/* =========================================================
+   AUTO-DETECTION STATUS
+   ========================================================= */
+.code-hint {
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+  width: 100%;
+  margin-top: 4px;
+}
