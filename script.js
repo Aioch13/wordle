@@ -182,23 +182,25 @@ function startGame(word) {
   // 1. Force the modal to hide
   modal.classList.add("hidden"); 
 
-  // 2. Reset logic
+  // 2. Reset game state
   solution = word;
   currentRow = 0;
   currentGuess = "";
   gameOver = false;
 
-  // 3. Reset Keyboard Visuals
+  // 3. Reset Keyboard State
   for (const k in keyStates) delete keyStates[k];
-  document.querySelectorAll(".key").forEach(k => {
-    k.classList.remove("absent", "present", "correct");
+  
+  // Reset all keyboard key colors
+  document.querySelectorAll(".key").forEach(key => {
+    key.classList.remove("absent", "present", "correct");
+    // Reset to default background
+    key.style.background = "";
   });
 
-  // 4. Refresh UI
-  initBoard();    // Re-draws the empty squares
-  // initKeyboard(); // Optional: only if you change layouts
+  // 4. Reset board
+  initBoard();
 }
-
 /* =========================================================
    DAILY WORD
    ========================================================= */
