@@ -238,3 +238,39 @@ header h1 {
 .hidden {
   display: none;
 }
+/* =========================================================
+   MOBILE RESPONSIVENESS
+   ========================================================= */
+
+html, body {
+  height: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* Prevent scrolling */
+body {
+  overflow: hidden;
+}
+
+/* Slightly smaller tiles & keyboard on small screens */
+@media (max-height: 700px) {
+  .tile {
+    width: 52px;
+    height: 52px;
+    font-size: 26px;
+  }
+
+  .key {
+    height: 48px;
+    min-width: 34px;
+    font-size: 13px;
+  }
+
+  #keyboard {
+    margin-top: 18px;
+  }
+}
+
