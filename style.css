@@ -51,12 +51,43 @@ header {
   border-bottom: 1px solid var(--border);
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-logo {
+  height: 36px;
+  width: 36px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
 header h1 {
   margin: 0;
   font-size: 22px;
   font-weight: 800;
   letter-spacing: 1px;
   color: #56a550; /* Lumiere Green */
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#timerDisplay {
+  font-size: 14px;
+  font-weight: 600;
+  color: #56a550;
+  background: rgba(86, 165, 80, 0.1);
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  min-width: 60px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .mode-buttons {
@@ -73,6 +104,37 @@ header h1 {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-buttons button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mode-buttons button:active {
+  transform: scale(0.95);
+}
+
+/* =========================================================
+   STATUS BAR
+   ========================================================= */
+#status {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  z-index: 1000;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+#status.hidden {
+  display: none;
 }
 
 /* =========================================================
@@ -102,47 +164,52 @@ header h1 {
   font-size: 2rem;
   font-weight: 700;
   text-transform: uppercase;
-  transition: transform 0.1s ease;
+  color: white;
+  transition: background-color 0.3s ease;
 }
 
-.tile.correct { background: var(--correct); border-color: var(--correct); }
-.tile.present { background: var(--present); border-color: var(--present); }
-.tile.absent  { background: var(--absent);  border-color: var(--absent); }
+.tile.correct { 
+  background: var(--correct); 
+  border-color: var(--correct); 
+}
+
+.tile.present { 
+  background: var(--present); 
+  border-color: var(--present); 
+}
+
+.tile.absent { 
+  background: var(--absent);  
+  border-color: var(--absent); 
+}
 
 /* =========================================================
-   CHALLENGE PANEL (REFINED)
+   ANIMATIONS
    ========================================================= */
-#challengePanel {
-  width: 100%;
-  max-width: 500px;
-  background: var(--panel-bg);
-  padding: 12px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  border-top: 1px solid var(--border);
+@keyframes flip {
+  0% {
+    transform: rotateX(0);
+  }
+  50% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0);
+  }
 }
 
-#challengeInput {
-  flex: 1;
-  min-width: 150px;
-  background: #121213;
-  border: 1px solid var(--border);
-  color: white;
-  padding: 8px 12px;
-  border-radius: var(--radius);
-  font-size: 14px;
+.tile.flip {
+  animation: flip 0.6s ease;
 }
 
-#challengePanel button {
-  background: #565758;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: var(--radius);
-  font-weight: 700;
-  font-size: 13px;
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.shake {
+  animation: shake 0.5s ease;
 }
 
 /* =========================================================
@@ -175,6 +242,7 @@ header h1 {
   font-size: 14px;
   cursor: pointer;
   user-select: none;
+  transition: all 0.2s ease;
 }
 
 .key.wide {
@@ -182,80 +250,11 @@ header h1 {
   font-size: 12px;
 }
 
-/* =========================================================
-   MODAL (REFINED)
-   ========================================================= */
-#modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+.key:active {
+  transform: scale(0.95);
 }
 
-#modal.hidden { display: none !important; }
-
-.modal-content {
-  background: var(--panel-bg);
-  width: 85%;
-  max-width: 320px;
-  padding: 30px;
-  border-radius: 12px;
-  text-align: center;
-  border: 1px solid var(--border);
-}
-
-.modal-content button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: none;
-  font-weight: 800;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-#copyResult { background: var(--correct); color: white; }
-#playAgain { background: transparent; border: 1px solid var(--border); color: white; margin-top: 15px; }
-
-/* Hidden utility */
-.hidden { display: none; }
-
-/* =========================================================
-   ANIMATIONS
-   ========================================================= */
-@keyframes flip {
-  0% {
-    transform: rotateX(0);
-  }
-  50% {
-    transform: rotateX(90deg);
-  }
-  100% {
-    transform: rotateX(0);
-  }
-}
-
-.tile.flip {
-  animation: flip 0.6s ease;
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-
-.shake {
-  animation: shake 0.5s ease;
-}
-
-/* =========================================================
-   KEYBOARD STATES
-   ========================================================= */
+/* KEYBOARD STATES */
 .key.correct {
   background: var(--correct) !important;
 }
@@ -269,46 +268,32 @@ header h1 {
 }
 
 /* =========================================================
-   TILE STATES (ENSURE TEXT IS VISIBLE)
+   CHALLENGE PANEL (REFINED)
    ========================================================= */
-.tile.correct, 
-.tile.present, 
-.tile.absent {
-  color: white !important;
-  border: none;
+#challengePanel {
+  width: 100%;
+  max-width: 500px;
+  background: var(--panel-bg);
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  border-top: 1px solid var(--border);
 }
 
-/* Ensure text stays visible during flip */
-.tile {
+#challengeInput {
+  flex: 1;
+  min-width: 150px;
+  background: #121213;
+  border: 1px solid var(--border);
   color: white;
-  transition: background-color 0.3s ease;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  transition: all 0.3s ease;
 }
 
-/* =========================================================
-   STATUS BAR
-   ========================================================= */
-/* Add to your existing CSS */
-#status {
-  position: fixed;
-  top: 70px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.9);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  z-index: 1000;
-  font-weight: 600;
-  text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-#status.hidden {
-  display: none;
-}
-/* =========================================================
-   CHALLENGE INPUT STATES
-   ========================================================= */
 #challengeInput:focus {
   outline: 2px solid #56a550;
   outline-offset: -2px;
@@ -324,6 +309,94 @@ header h1 {
   background: rgba(255, 107, 107, 0.1);
 }
 
+#challengePanel button {
+  background: #565758;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#challengePanel button:active {
+  transform: scale(0.95);
+}
+
+/* =========================================================
+   MODAL (REFINED)
+   ========================================================= */
+#modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+#modal.hidden { 
+  display: none !important; 
+}
+
+.modal-content {
+  background: var(--panel-bg);
+  width: 85%;
+  max-width: 320px;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+#resultTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+#resultGrid {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  line-height: 1.4;
+  margin-bottom: 20px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.modal-content button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-content button:active {
+  transform: scale(0.98);
+}
+
+#copyResult { 
+  background: var(--correct); 
+  color: white; 
+}
+
+#playAgain { 
+  background: transparent; 
+  border: 1px solid var(--border); 
+  color: white; 
+  margin-top: 15px; 
+}
+
 /* =========================================================
    AUTO-DETECTION STATUS
    ========================================================= */
@@ -333,4 +406,68 @@ header h1 {
   text-align: center;
   width: 100%;
   margin-top: 4px;
+}
+
+/* Hidden utility */
+.hidden { 
+  display: none; 
+}
+
+/* =========================================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================================= */
+@media (max-width: 380px) {
+  :root {
+    --tile-size: 52px;
+  }
+  
+  .tile {
+    font-size: 1.8rem;
+  }
+  
+  .key {
+    height: 52px;
+    font-size: 13px;
+  }
+  
+  header h1 {
+    font-size: 20px;
+  }
+  
+  .header-logo {
+    height: 32px;
+    width: 32px;
+  }
+  
+  #timerDisplay {
+    font-size: 13px;
+    min-width: 55px;
+  }
+  
+  .mode-buttons button {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-height: 700px) {
+  :root {
+    --tile-size: 50px;
+  }
+  
+  .tile {
+    font-size: 1.7rem;
+  }
+  
+  #board {
+    padding: 5px;
+  }
+  
+  #keyboard {
+    padding: 5px 5px 15px 5px;
+  }
+  
+  .key {
+    height: 50px;
+  }
 }
