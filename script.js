@@ -1,5 +1,6 @@
 /* =========================================================
-   LUMIERE WORDLE – PRO ENGINE (IDENTITY & CHALLENGE V3.0)
+   LUMIERE WORDLE – PRO ENGINE (STABLE V3.2)
+   NYT Light Theme & Identity Optimized
    ========================================================= */
 
 /* ---------------- GLOBAL STATE ---------------- */
@@ -10,15 +11,11 @@ let currentRow = 0;
 let currentGuess = "";
 let gameOver = false;
 let mode = "daily";
-let challengeCode = null;
-let challengeCreator = ""; // Stores who created the active challenge
+let challengeCreator = "";
 
-/* ---------------- IDENTITY STATE ---------------- */
+/* ---------------- IDENTITY & TIMER ---------------- */
 let userName = localStorage.getItem("lumiere_username") || "";
-
-/* ---------------- TIMER STATE ---------------- */
 let gameStartTime = null;
-let gameEndTime = null;
 let timerInterval = null;
 let elapsedTime = 0;
 
@@ -29,7 +26,7 @@ const SALT = 9137;
 const STATE_PRIORITY = { absent: 1, present: 2, correct: 3 };
 const keyStates = {};
 
-/* ---------------- DOM ---------------- */
+/* ---------------- DOM ELEMENTS ---------------- */
 const board = document.getElementById("board");
 const keyboard = document.getElementById("keyboard");
 const dailyBtn = document.getElementById("dailyBtn");
@@ -47,68 +44,171 @@ const statusBar = document.getElementById("status");
 const timerDisplay = document.getElementById("timerDisplay");
 
 /* =========================================================
-   IDENTITY MANAGEMENT
-   ========================================================= */
-function checkUserIdentity() {
-    if (!userName) {
-        const name = prompt("Welcome to Lumiere Wordle! Please enter your name for challenges:");
-        if (name && name.trim()) {
-            userName = name.trim();
-            localStorage.setItem("lumiere_username", userName);
-            showStatus(`Signed in as ${userName}`);
-        } else {
-            userName = "Anonymous";
-        }
-    }
-}
-
-/* =========================================================
-   CORE UTILITIES (LOADER/TIMER)
+   1. INITIALIZATION (THE "SQUID" FIX)
    ========================================================= */
 async function loadWordFile(path) {
     try {
-        const res = await fetch(path);
+        const res = await fetch(path + "?v=" + Date.now()); // Prevents caching issues
         if (!res.ok) throw new Error("Load failed");
         const text = await res.text();
-        return text.split(/\r?\n/).map(w => w.trim().toLowerCase()).filter(w => /^[a-z]{5}$/.test(w));
-    } catch (e) { return []; }
+        return text.split(/\r?\n/)
+                   .map(w => w.trim().toLowerCase())
+                   .filter(w => /^[a-z]{5}$/.test(w));
+    } catch (e) { 
+        console.error("Error loading file:", path, e);
+        return []; 
+    }
 }
 
-async function loadWords() {
-    SOLUTIONS = await loadWordFile("solutions.txt");
-    VALID_GUESSES = await loadWordFile("guesses.txt");
+async function init() {
+    showStatus("Loading engine...");
+    
+    // Promise.all ensures we wait for BOTH files before proceeding
+    const [solList, guessList] = await Promise.all([
+        loadWordFile("solutions.txt"),
+        loadWordFile("guesses.txt")
+    ]);
+
+    SOLUTIONS = solList;
+    VALID_GUESSES = guessList;
+
+    // Merge solutions into guesses for safety
     SOLUTIONS.forEach(w => { if (!VALID_GUESSES.includes(w)) VALID_GUESSES.push(w); });
-}
 
-function startTimer() {
-    if (gameStartTime) return;
-    gameStartTime = Date.now();
-    timerInterval = setInterval(() => {
-        elapsedTime = Math.floor((Date.now() - gameStartTime) / 1000);
-        updateTimerDisplay();
-    }, 1000);
-}
+    if (VALID_GUESSES.length === 0) {
+        showStatus("Critical Error: Word list empty.");
+        return;
+    }
 
-function updateTimerDisplay() {
-    const min = Math.floor(elapsedTime / 60).toString().padStart(2, '0');
-    const sec = (elapsedTime % 60).toString().padStart(2, '0');
-    timerDisplay.textContent = `${min}:${sec}`;
-}
-
-/* =========================================================
-   INIT
-   ========================================================= */
-(async function init() {
     checkUserIdentity();
-    await loadWords();
     initBoard();
     initKeyboard();
     bindUI();
     startDaily();
-})();
+    showStatus("Lumiere Wordle Ready");
+}
 
 /* =========================================================
-   UI & INPUT
+   2. IDENTITY MANAGEMENT
+   ========================================================= */
+function checkUserIdentity() {
+    if (!userName || userName === "Anonymous") {
+        const name = prompt("Welcome! Please enter your name for challenges:");
+        userName = (name && name.trim()) ? name.trim() : "Anonymous";
+        localStorage.setItem("lumiere_username", userName);
+    }
+}
+
+/* =========================================================
+   3. GAME ENGINE CORE
+   ========================================================= */
+function startGame(word) {
+    modal.classList.add("hidden");
+    solution = word;
+    currentRow = 0;
+    currentGuess = "";
+    gameOver = false;
+    gameStartTime = null;
+    elapsedTime = 0;
+    clearInterval(timerInterval);
+    updateTimerDisplay();
+
+    // Reset Visuals
+    for (const k in keyStates) delete keyStates[k];
+    initBoard();
+    initKeyboard();
+}
+
+function submitGuess() {
+    if (gameOver || currentGuess.length !== COLS) return;
+
+    // Check against the now-fully-loaded VALID_GUESSES list
+    if (!VALID_GUESSES.includes(currentGuess)) {
+        showStatus("Not in word list");
+        board.children[currentRow].classList.add("shake");
+        setTimeout(() => board.children[currentRow].classList.remove("shake"), 500);
+        return;
+    }
+
+    if (currentRow === 0) startTimer();
+
+    const result = scoreGuess(currentGuess, solution);
+    const guessToProcess = currentGuess;
+    gameOver = true; // Lock input during animation
+
+    result.forEach((res, i) => {
+        const tile = board.children[currentRow].children[i];
+        setTimeout(() => {
+            tile.classList.add("flip");
+            setTimeout(() => {
+                tile.classList.add(res);
+                tile.textContent = guessToProcess[i];
+                updateKeyboard(guessToProcess[i], res);
+                if (i === COLS - 1) checkGameState(guessToProcess);
+            }, 250);
+        }, i * 300);
+    });
+    currentGuess = "";
+}
+
+function scoreGuess(guess, sol) {
+    const res = Array(COLS).fill("absent");
+    const solArr = sol.split("");
+    // First pass: Correct spots
+    for (let i = 0; i < COLS; i++) {
+        if (guess[i] === sol[i]) { 
+            res[i] = "correct"; 
+            solArr[i] = null; 
+        }
+    }
+    // Second pass: Present spots
+    for (let i = 0; i < COLS; i++) {
+        if (res[i] === "correct") continue;
+        const idx = solArr.indexOf(guess[i]);
+        if (idx !== -1) { 
+            res[i] = "present"; 
+            solArr[idx] = null; 
+        }
+    }
+    return res;
+}
+
+/* =========================================================
+   4. CHALLENGE SYSTEM
+   ========================================================= */
+function createChallenge() {
+    const word = prompt("Enter a 5-letter word for the challenge:")?.toLowerCase();
+    if (!word || !VALID_GUESSES.includes(word)) {
+        showStatus("Invalid Word");
+        return;
+    }
+    const code = encodeWord(word);
+    const shareText = `🧩 LUMIERE WORDLE CHALLENGE\nCreated by: ${userName}\nCode: \`${code}\`\nPlay: https://aioch13.github.io/wordle/`;
+    
+    navigator.clipboard.writeText(shareText).then(() => {
+        showStatus("Challenge copied to clipboard!");
+    });
+}
+
+function loadChallenge(input) {
+    const nameMatch = input.match(/Created by:\s*([^\n\r]+)/i);
+    challengeCreator = nameMatch ? nameMatch[1].trim() : "Anonymous";
+
+    const match = input.match(/`([^`]+)`/) || input.match(/[A-Za-z0-9+/]{4,}/);
+    const code = match ? (match[1] || match[0]).trim() : null;
+    const word = code ? decodeWord(code) : null;
+
+    if (word) {
+        mode = "challenge";
+        startGame(word);
+        showStatus(`Challenge by ${challengeCreator} started!`);
+    } else {
+        showStatus("Invalid Code");
+    }
+}
+
+/* =========================================================
+   5. UI & UTILITIES
    ========================================================= */
 function initBoard() {
     board.innerHTML = "";
@@ -150,94 +250,9 @@ function handleKey(key) {
     if (key === "ENTER") submitGuess();
     else if (key === "⌫") currentGuess = currentGuess.slice(0, -1);
     else if (currentGuess.length < COLS) currentGuess += key.toLowerCase();
-    renderRow();
-}
-
-function renderRow() {
+    
     const row = board.children[currentRow];
     [...row.children].forEach((tile, i) => tile.textContent = currentGuess[i] || "");
-}
-
-/* =========================================================
-   GAME ENGINE
-   ========================================================= */
-function startDaily() {
-    mode = "daily";
-    challengeCode = null;
-    challengeCreator = "";
-    startGame(getDailyWord());
-}
-
-function startGame(word) {
-    modal.classList.add("hidden");
-    solution = word;
-    currentRow = 0;
-    currentGuess = "";
-    gameOver = false;
-    gameStartTime = null;
-    elapsedTime = 0;
-    clearInterval(timerInterval);
-    updateTimerDisplay();
-
-    for (const k in keyStates) delete keyStates[k];
-    document.querySelectorAll(".key").forEach(k => k.classList.remove("absent", "present", "correct"));
-    initBoard();
-}
-
-function submitGuess() {
-    const row = board.children[currentRow];
-    if (currentGuess.length !== COLS) return;
-    if (!VALID_GUESSES.includes(currentGuess)) {
-        row.classList.add("shake");
-        setTimeout(() => row.classList.remove("shake"), 500);
-        return;
-    }
-
-    if (currentRow === 0) startTimer();
-
-    const result = scoreGuess(currentGuess, solution);
-    const guessToProcess = currentGuess;
-    gameOver = true;
-
-    result.forEach((res, i) => {
-        const tile = row.children[i];
-        setTimeout(() => {
-            tile.classList.add("flip");
-            setTimeout(() => {
-                tile.classList.add(res);
-                tile.textContent = guessToProcess[i];
-                updateKeyboard(guessToProcess[i], res);
-                if (i === COLS - 1) checkGameState(guessToProcess);
-            }, 250);
-        }, i * 300);
-    });
-    currentGuess = "";
-}
-
-function checkGameState(guess) {
-    if (guess === solution) {
-        clearInterval(timerInterval);
-        setTimeout(() => endGame(true), 500);
-    } else if (++currentRow === ROWS) {
-        clearInterval(timerInterval);
-        setTimeout(() => endGame(false), 500);
-    } else {
-        gameOver = false;
-    }
-}
-
-function scoreGuess(guess, sol) {
-    const res = Array(COLS).fill("absent");
-    const solArr = sol.split("");
-    for (let i = 0; i < COLS; i++) {
-        if (guess[i] === sol[i]) { res[i] = "correct"; solArr[i] = null; }
-    }
-    for (let i = 0; i < COLS; i++) {
-        if (res[i] === "correct") continue;
-        const idx = solArr.indexOf(guess[i]);
-        if (idx !== -1) { res[i] = "present"; solArr[idx] = null; }
-    }
-    return res;
 }
 
 function updateKeyboard(letter, state) {
@@ -251,29 +266,37 @@ function updateKeyboard(letter, state) {
     }
 }
 
-/* =========================================================
-   END GAME & RESULTS
-   ========================================================= */
-function endGame(win) {
-    gameOver = true;
-    showResults(win);
+function startDaily() {
+    mode = "daily";
+    challengeCreator = "";
+    const start = new Date("2021-06-19");
+    const index = Math.floor((new Date() - start) / 86400000);
+    startGame(SOLUTIONS[index % SOLUTIONS.length]);
+}
+
+function checkGameState(guess) {
+    if (guess === solution) {
+        clearInterval(timerInterval);
+        setTimeout(() => showResults(true), 500);
+    } else if (++currentRow === ROWS) {
+        clearInterval(timerInterval);
+        setTimeout(() => showResults(false), 500);
+    } else {
+        gameOver = false; // Unlock for next row
+    }
 }
 
 function showResults(win) {
-    copyResultBtn.textContent = "Copy";
     const timeStr = timerDisplay.textContent;
+    resultTitle.innerText = win ? `Solved in ${timeStr}!` : `Word: ${solution.toUpperCase()}`;
     
-    // Header Logic
-    let displayTitle = win ? `Solved in ${timeStr}!` : `Failed! Word: ${solution.toUpperCase()}`;
-    if (challengeCreator && challengeCreator !== "Anonymous") {
-        displayTitle = `${win ? "Puzzle Cracked!" : "Annie Won!"}\nOriginal by: ${challengeCreator}`;
-    }
-    resultTitle.innerText = displayTitle;
-
-    // Grid Logic
     let grid = "";
-    for (let r = 0; r <= currentRow; r++) {
+    for (let r = 0; r < ROWS; r++) {
         const row = board.children[r];
+        if (!row.children[0].classList.contains("absent") && 
+            !row.children[0].classList.contains("present") && 
+            !row.children[0].classList.contains("correct")) break;
+        
         [...row.children].forEach(tile => {
             if (tile.classList.contains("correct")) grid += "🟩";
             else if (tile.classList.contains("present")) grid += "🟨";
@@ -282,53 +305,8 @@ function showResults(win) {
         grid += "\n";
     }
 
-    let resultText = `LUMIERE WORDLE\n`;
-    if (mode === "challenge") {
-        resultText += `Puzzle by: ${challengeCreator || "Anonymous"}\n`;
-    } else {
-        resultText += `Daily Mode\n`;
-    }
-    resultText += `${win ? "Solved" : "Failed"} in ${timeStr}\n\n${grid}`;
-    
-    resultGrid.textContent = resultText;
+    resultGrid.textContent = `LUMIERE WORDLE\n${mode === "challenge" ? "Puzzle by: " + challengeCreator : "Daily Mode"}\n${grid}`;
     modal.classList.remove("hidden");
-}
-
-/* =========================================================
-   CHALLENGE SYSTEM (MODIFIED FOR IDENTITY)
-   ========================================================= */
-function createChallenge() {
-    const word = prompt("Enter a 5-letter word for the challenge:")?.toLowerCase();
-    if (!word || !VALID_GUESSES.includes(word)) {
-        showStatus("Invalid Word");
-        return;
-    }
-    const code = encodeWord(word);
-    const shareText = `🧩 LUMIERE WORDLE CHALLENGE\nCreated by: ${userName}\nCode: \`${code}\`\nPlay: https://aioch13.github.io/wordle/`;
-    
-    navigator.clipboard.writeText(shareText).then(() => {
-        showStatus("Invite with your name copied!");
-    });
-}
-
-function loadChallenge(input) {
-    // Extract Name
-    const nameMatch = input.match(/Created by:\s*([^\n\r]+)/i);
-    challengeCreator = nameMatch ? nameMatch[1].trim() : "Anonymous";
-
-    // Extract Code
-    const match = input.match(/`([^`]+)`/) || input.match(/[A-Za-z0-9+/]{4,}/);
-    const code = match ? (match[1] || match[0]).trim() : null;
-    const word = code ? decodeWord(code) : null;
-
-    if (word) {
-        mode = "challenge";
-        challengeCode = code;
-        startGame(word);
-        showStatus(`Challenge by ${challengeCreator} started!`);
-    } else {
-        showStatus("Invalid Code");
-    }
 }
 
 /* ---------------- HELPERS ---------------- */
@@ -352,29 +330,18 @@ function decodeWord(code) {
     } catch { return null; }
 }
 
-function getDailyWord() {
-    const start = new Date("2021-06-19");
-    const index = Math.floor((new Date() - start) / 86400000);
-    return SOLUTIONS[index % SOLUTIONS.length];
+function startTimer() {
+    gameStartTime = Date.now();
+    timerInterval = setInterval(() => {
+        elapsedTime = Math.floor((Date.now() - gameStartTime) / 1000);
+        updateTimerDisplay();
+    }, 1000);
 }
 
-function bindUI() {
-    dailyBtn.onclick = startDaily;
-    challengeBtn.onclick = () => challengePanel.classList.toggle("hidden");
-    loadChallengeBtn.onclick = () => loadChallenge(challengeInput.value.trim());
-    createChallengeBtn.onclick = createChallenge;
-    pasteChallengeBtn.onclick = () => {
-        navigator.clipboard.readText().then(t => {
-            challengeInput.value = t;
-            loadChallenge(t);
-        });
-    };
-    copyResultBtn.onclick = () => {
-        navigator.clipboard.writeText(resultGrid.textContent);
-        showStatus("Results Copied!");
-    };
-    document.getElementById("playAgain").onclick = startDaily;
-    modal.onclick = (e) => { if (e.target === modal) modal.classList.add("hidden"); };
+function updateTimerDisplay() {
+    const min = Math.floor(elapsedTime / 60).toString().padStart(2, '0');
+    const sec = (elapsedTime % 60).toString().padStart(2, '0');
+    timerDisplay.textContent = `${min}:${sec}`;
 }
 
 function showStatus(msg) {
@@ -382,3 +349,24 @@ function showStatus(msg) {
     statusBar.classList.remove("hidden");
     setTimeout(() => statusBar.classList.add("hidden"), 2000);
 }
+
+function bindUI() {
+    dailyBtn.onclick = startDaily;
+    challengeBtn.onclick = () => challengePanel.classList.toggle("hidden");
+    loadChallengeBtn.onclick = () => loadChallenge(challengeInput.value.trim());
+    createChallengeBtn.onclick = createChallenge;
+    pasteChallengeBtn.onclick = async () => {
+        const t = await navigator.clipboard.readText();
+        challengeInput.value = t;
+        loadChallenge(t);
+    };
+    copyResultBtn.onclick = () => {
+        navigator.clipboard.writeText(resultGrid.textContent);
+        showStatus("Copied!");
+    };
+    document.getElementById("playAgain").onclick = startDaily;
+    modal.onclick = (e) => { if (e.target === modal) modal.classList.add("hidden"); };
+}
+
+// Start Engine
+init();
