@@ -147,12 +147,10 @@ header h1 {
    ========================================================= */
 
 #keyboard {
-  margin-top: auto; /* push keyboard toward bottom */
-  padding-bottom: 10px;
+  margin-top: 24px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex-shrink: 0;
 }
 
 #keyboard > div {
@@ -162,8 +160,8 @@ header h1 {
 }
 
 .key {
-  min-width: 40px;
   height: 58px;
+  min-width: 40px;
   padding: 0 10px;
   background: var(--key-bg);
   color: var(--key-text);
@@ -177,10 +175,13 @@ header h1 {
   user-select: none;
 }
 
-.key:hover {
-  filter: brightness(0.95);
+.key.wide {
+  min-width: 80px; /* 2x normal key */
+  padding: 0 14px;
+  font-size: 13px;
 }
 
+/* Keyboard states */
 .key.correct {
   background: var(--correct);
   color: white;
